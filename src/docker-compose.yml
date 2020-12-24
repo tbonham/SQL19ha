@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  sqlNode1: 
+    container_name: sqlNode1
+    image: sqlag2019:ha
+    hostname: sqlNode1
+    domainname: lab.example.com
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Password1!
+    ports:
+        - 14331:1433
+    volumes:
+      - ./data/sqlNode1/data:/var/opt/mssql/data
+      - ./data/sqlNode1/backup:/var/opt/mssql/backup
+      - ./data/sqlNode1/tmp:/tmp
+    extra_hosts:
+      sqlNode2.example.com: "172.18.1.12"
+      sqlNode3.example.com: "172.18.1.13"
+    networks:
+        internal:
+                ipv4_address: 172.18.1.11
+  
+  sqlNode2: 
+    container_name: sqlNode2
+    image: sqlag2019:ha
+    hostname: sqlNode2
+    domainname: lab.example.com
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Password1!
+    ports:
+        - 14332:1433
+    volumes:
+      - ./data/sqlNode2/data:/var/opt/mssql/data
+      - ./data/sqlNode2/backup:/var/opt/mssql/backup
+      - ./data/sqlNode2/tmp:/tmp
+    extra_hosts:
+      sqlNode1.example.com: "172.18.1.11"
+      sqlNode3.example.com: "172.18.1.13"
+    networks:
+        internal:
+                ipv4_address: 172.18.1.12
+  sqlNode3: 
+    container_name: sqlNode3
+    image: sqlag2019:ha
+    hostname: sqlNode3
+    domainname: lab.example.com
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Password1!
+    ports:
+        - 14333:1433
+    volumes:
+      - ./data/sqlNode3/data:/var/opt/mssql/data
+      - ./data/sqlNode3/backup:/var/opt/mssql/backup
+      - ./data/sqlNode3/tmp:/tmp
+    extra_hosts:
+      sqlNode1.example.com: "172.18.1.11"
+      sqlNode2.example.com: "172.18.1.12"
+    networks:
+        internal:
+                ipv4_address: 172.18.1.13
+
+
+networks:
+  internal:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.1.0/24
+          gateway: 172.18.1.1
